@@ -1,0 +1,39 @@
+beacon_command_register("bof-test", "Bof test", 
+"Version: 1.0
+
+===General use===
+Command: bof-test [pid]");
+
+sub readfile {
+    local('$file');
+    $file = $1;
+
+    # read in the right BOF file
+    blog("Reading $file");
+    $handle = openf($file);
+    $data   = readb($handle, -1);
+    closef($handle);
+    if(strlen($data) == 0)
+    {
+        berror($1, "could not read file");
+    }
+        
+    return $data;
+}
+
+
+alias bof-test {
+    local('$args');
+    $barch  = barch($1);
+    if (size(@_) < 2) {
+        berror($1, "Missing arugment. Example: bof-test pid");
+        return;
+    }
+    $pid = $2;
+
+    btask($1, "pid: $pid");
+
+    $args = bof_pack($1, "i", $pid);
+    beacon_inline_execute($1, readfile(script_resource("./bin/test. $+ $barch $+ .o")), "go", $args);
+}
+
